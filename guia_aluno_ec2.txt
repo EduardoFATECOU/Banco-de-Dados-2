@@ -1,0 +1,208 @@
+================================================================================
+ BANCO DE DADOS II — Guia do Aluno (Docker)
+ Instalação e primeiros passos na AWS EC2 (Debian 13)
+ Professor: Eduardo
+================================================================================
+
+Sumario:
+  1. Acessar sua EC2
+  2. Instalar Docker + MongoDB, Redis e Cassandra
+  3. Copiar os exemplos da disciplina
+  4. Executar os exemplos
+  5. Comandos uteis
+
+================================================================================
+1. ACESSAR SUA EC2
+================================================================================
+
+Voce recebeu do professor:
+  - IP publico da sua EC2 (ex: 54.123.45.67)
+  - Chave SSH (.pem)
+
+Conecte-se via terminal:
+
+  ssh -i /caminho/sua-chave.pem admin@<IP-DA-SUA-EC2>
+
+Exemplo:
+  ssh -i ~/Downloads/minha-chave.pem admin@54.123.45.67
+
+No Windows, use PowerShell.
+
+================================================================================
+2. INSTALAR DOCKER E OS BANCOS
+================================================================================
+
+Acesse sua EC2 e execute:
+
+  chmod +x setup_docker.sh
+  sudo ./setup_docker.sh
+
+O script instala Docker e sobe 3 containers:
+
+  - MongoDB 7.0  ->  mongosh
+  - Redis        ->  redis-cli ping
+  - Cassandra 4.1 -> cqlsh
+
+Aguarde de 3 a 5 minutos. Ao final, teste:
+
+  mongosh --eval "db.version()"
+  redis-cli ping
+  cqlsh -e "DESCRIBE keyspaces;"
+
+================================================================================
+3. COPIAR OS EXEMPLOS
+================================================================================
+
+No SEU computador local (NAO dentro da EC2), envie os exemplos:
+
+  scp -i /caminho/sua-chave.pem -r "06_Exemplos_EC2" admin@<IP>:~/exemplos_banco2
+
+Exemplo:
+  scp -i ~/Downloads/minha-chave.pem -r "C:\Users\SeuNome\Desktop\06_Exemplos_EC2" admin@54.123.45.67:~/exemplos_banco2
+
+================================================================================
+4. EXECUTAR OS EXEMPLOS
+================================================================================
+
+Dentro da EC2:
+
+  cd ~/exemplos_banco2
+
+--- FUNDAMENTOS (Teoria) ---
+
+  cd 01_Fundamentos
+  chmod +x *.sh
+  ./01_teorema_cap.sh
+  ./02_comparativo_sql_nosql.sh
+
+--- MONGODB (CRUD, aggregation, indices) ---
+
+  cd ../02_MongoDB
+  chmod +x *.sh
+  ./01_crud_mongodb.sh
+  ./02_aggregation.sh
+  ./03_indices.sh
+
+--- CASSANDRA (CQL, modelagem) ---
+
+  cd ../03_Cassandra
+  chmod +x *.sh
+  cat 01_crud_cassandra.cql | cqlsh
+  ./02_modelagem_cql.sh
+
+--- REDIS (estruturas, cache, fila) ---
+
+  cd ../04_Redis
+  chmod +x *.sh
+  ./01_estruturas_redis.sh
+  ./02_cache_simulacao.sh
+  ./03_fila_redis.sh
+
+--- PROJETO INTEGRADOR (MongoDB + Redis + Cassandra) ---
+
+  cd ../06_Projeto_Integrador
+  chmod +x *.sh
+  ./01_ingestao_mongodb.sh
+  ./02_cache_redis.sh
+  cat 03_logs_cassandra.cql | cqlsh
+
+================================================================================
+5. GERENCIAR OS CONTAINERS
+================================================================================
+
+Os bancos rodam dentro de containers Docker.
+
+  # Ver status
+  cd /opt/banco2 && docker compose ps
+
+  # Parar tudo
+  cd /opt/banco2 && docker compose down
+
+  # Iniciar tudo
+  cd /opt/banco2 && docker compose up -d
+
+  # Reiniciar um banco especifico
+  docker restart mongodb_banco2
+  docker restart redis_banco2
+  docker restart cassandra_banco2
+
+  # Ver logs
+  docker logs mongodb_banco2 --tail 20
+  docker logs cassandra_banco2 --tail 20
+
+================================================================================
+6. DICAS
+================================================================================
+
+- Os comandos mongosh, redis-cli e cqlsh funcionam normalmente
+  (sao atalhos que redirecionam para dentro dos containers)
+
+- Os bancos so funcionam DENTRO da EC2 (localhost).
+  Nao precisa liberar portas no Security Group alem da porta 22 (SSH).
+
+- Se o Cassandra demorar, aguarde e tente: cqlsh
+
+- Exemplos extras (Neo4j, Elasticsearch, Kafka) estao em:
+  ~/exemplos_banco2/05_Outros_Modelos
+
+==============================================================================
+7. RESOLVENDO PROBLEMAS COMUNS
+==============================================================================
+
+--- PROBLEMA: "Connection refused" ou "container is not running" ---
+  Causa: Os containers pararam (ex: reboot da EC2).
+
+  Solucao:
+    cd /opt/banco2 && docker compose up -d
+    sleep 5
+    mongosh --eval "db.version()"
+
+--- PROBLEMA: "Container name already in use" ---
+  Causa: Containers antigos parados com o mesmo nome.
+
+  Solucao:
+    docker rm -f mongodb_banco2 redis_banco2 cassandra_banco2
+    cd /opt/banco2 && docker compose up -d
+
+--- PROBLEMA: "No space left on device" (disco cheio) ---
+  Causa: EC2 tem apenas 8GB. Imagens Docker ocupam muito espaco.
+
+  Solucao:
+    docker system prune -a -f       # Remove imagens nao usadas
+    sudo apt-get clean              # Limpa cache de pacotes
+    df -h                           # Confirma espaco livre
+
+--- PROBLEMA: Cassandra nao responde (timeout) ---
+  Causa: Cassandra demora 2-3 minutos para iniciar.
+
+  Solucao:
+    docker logs cassandra_banco2 --tail 10
+    # Se aparecer "Starting listening for CQL clients", esta pronto
+    cqlsh -e "DESCRIBE keyspaces;"
+
+--- PROBLEMA: "docker: command not found" ---
+  Causa: O script setup_docker.sh nao foi executado ainda.
+
+  Solucao:
+    sudo ./setup_docker.sh
+
+--- PROBLEMA: mongosh/redis-cli/cqlsh: command not found ---
+  Causa: Os atalhos nao foram criados (script nao terminou ou sem sudo).
+
+  Solucao:
+    sudo ./setup_docker.sh   # Executa novamente para recriar os atalhos
+
+--- PROBLEMA: Container morreu sozinho (exited) ---
+  Causa: Falta de memoria ou disco.
+
+  Solucao:
+    docker logs NOME_DO_CONTAINER --tail 20   # Ver motivo
+    docker rm -f NOME_DO_CONTAINER            # Remove
+    cd /opt/banco2 && docker compose up -d    # Recria
+
+--- DICA FINAL: Sempre que algo der errado, tente: ---
+    docker ps                  # Ve quais containers estao rodando
+    docker ps -a               # Ve TODOS (inclusive parados)
+    cd /opt/banco2 && docker compose down && docker compose up -d  # Reinicio completo
+
+================================================================================

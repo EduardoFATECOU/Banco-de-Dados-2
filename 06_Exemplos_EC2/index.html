@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Dados II — Exemplos EC2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f7;
+            color: #1a1a2e;
+            padding: 2rem;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header {
+            background: linear-gradient(135deg, #0a3d6b, #145a8c);
+            color: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(10,61,107,0.3);
+        }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; font-size: 1.1rem; }
+        nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.2rem 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 5px solid #0a3d6b;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(10,61,107,0.15); }
+        .card h2 { font-size: 1.1rem; color: #0a3d6b; margin-bottom: 0.4rem; }
+        .card h2 a { color: #0a3d6b; text-decoration: none; }
+        .card h2 a:hover { text-decoration: underline; }
+        .card p { font-size: 0.9rem; color: #555; line-height: 1.5; }
+        .card .badge {
+            display: inline-block;
+            background: #0a3d6b;
+            color: #fff;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 12px;
+            margin-top: 0.5rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: #888;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+        <header>
+            <h1>&#x1F4BE; Banco de Dados II — Exemplos EC2</h1>
+            <p>Instância AWS Debian 13 — Exemplos práticos de MongoDB, Redis, Cassandra, Neo4j, Elasticsearch, Kafka, InfluxDB, Qdrant, MinIO, PostGIS e Persistência Poliglota</p>
+        </header>
+
+    <nav>
+        <div class="card">
+            <h2><a href="00_Setup/">00_Setup</a></h2>
+            <p>Scripts de instalação de todos os bancos de dados no Debian 13. Inclui MongoDB, Redis, Cassandra, Docker e Neo4j.</p>
+            <span class="badge">setup</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="01_Fundamentos/">01_Fundamentos</a></h2>
+            <p>Teorema CAP e comparativo entre SQL e NoSQL. Scripts educativos com echo e sleep para demonstração no terminal.</p>
+            <span class="badge">teoria</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="02_MongoDB/">02_MongoDB</a></h2>
+            <p>Operações CRUD, pipeline de aggregation e índices no MongoDB via mongosh. Exemplos com banco "escola" e coleção "vendas".</p>
+            <span class="badge">mongodb</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="03_Cassandra/">03_Cassandra</a></h2>
+            <p>CRUD com CQL e modelagem orientada a consultas no Cassandra. Keyspace "loja" e "biblioteca" com tabelas por padrão de acesso.</p>
+            <span class="badge">cassandra</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="04_Redis/">04_Redis</a></h2>
+            <p>Estruturas de dados (Strings, Lists, Sets, Hashes, Sorted Sets), simulação de cache e fila de tarefas com Redis.</p>
+            <span class="badge">redis</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="05_Outros_Modelos/">05_Outros_Modelos</a></h2>
+            <p>Neo4j (Cypher), Elasticsearch, Kafka (streaming), InfluxDB (time-series), Qdrant (vetores), MinIO (objetos), PostGIS (espacial) e Persistência Poliglota.</p>
+            <span class="badge">outros</span>
+        </div>
+
+        <div class="card">
+            <h2><a href="06_Projeto_Integrador/">06_Projeto_Integrador</a></h2>
+            <p>Projeto integrador: catálogo de filmes com MongoDB (dados), Redis (cache) e Cassandra (logs). Scripts completos de ingestão e consulta.</p>
+            <span class="badge">projeto</span>
+        </div>
+    </nav>
+
+    <footer>
+        Disciplina de Banco de Dados II &mdash; Exemplos práticos para AWS EC2 Debian 13
+    </footer>
+</div>
+</body>
+</html>

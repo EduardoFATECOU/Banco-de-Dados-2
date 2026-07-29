@@ -1,0 +1,124 @@
+# =============================================================================
+# Docker Compose para subir todos os bancos de dados localmente
+#
+# Serviços:
+#   - MongoDB (27017)
+#   - Redis   (6379)
+#   - Cassandra (9042)
+#   - Neo4j  (7474 HTTP, 7687 Bolt)
+#
+# Uso: docker compose -p bancos up -d
+# Para parar: docker compose -p bancos down
+# =============================================================================
+
+services:
+
+  # ------------------------------------------------------------------
+  # MONGODB — Banco NoSQL orientado a documentos
+  # Porta: 27017 (padrão)
+  # Usuário/Senha: opcional (descomentar variáveis para ativar)
+  # ------------------------------------------------------------------
+  mongodb:
+    image: mongo:7
+    container_name: mongodb_banco2
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    environment:
+      # Descomente para ativar autenticação:
+      # MONGO_INITDB_ROOT_USERNAME: admin
+      # MONGO_INITDB_ROOT_PASSWORD: senha123
+      MONGO_INITDB_DATABASE: admin
+    restart: unless-stopped
+    networks:
+      - bancos_net
+
+  # ------------------------------------------------------------------
+  # REDIS — Banco em memória (cache, filas, sessões)
+  # Porta: 6379 (padrão)
+  # ------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis_banco2
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --loglevel warning
+    restart: unless-stopped
+    networks:
+      - bancos_net
+
+  # ------------------------------------------------------------------
+  # CASSANDRA — Banco NoSQL orientado a colunas (wide-column)
+  # Porta: 9042 (CQL nativo)
+  # Porta: 9160 (Thrift, legado)
+  # ------------------------------------------------------------------
+  cassandra:
+    image: cassandra:5
+    container_name: cassandra_banco2
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: "BancoDeDadosII"
+      CASSANDRA_NUM_TOKENS: 256
+      CASSANDRA_DC: "datacenter1"
+      CASSANDRA_RACK: "rack1"
+      # Descomente para configurar autenticação:
+      # CASSANDRA_USER: cassandra
+      # CASSANDRA_PASSWORD: cassandra
+      HEAP_NEWSIZE: 128M
+      MAX_HEAP_SIZE: 512M
+    restart: unless-stopped
+    networks:
+      - bancos_net
+
+  # ------------------------------------------------------------------
+  # NEO4J — Banco de dados orientado a grafos
+  # Portas: 7474 (HTTP - interface web), 7687 (Bolt - protocolo nativo)
+  # Usuário: neo4j | Senha: definida em NEO4J_AUTH
+  # ------------------------------------------------------------------
+  neo4j:
+    image: neo4j:5-community
+    container_name: neo4j_banco2
+    ports:
+      - "7474:7474"    # HTTP - Browser Neo4j
+      - "7687:7687"    # Bolt - driver nativo
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    environment:
+      NEO4J_AUTH: neo4j/senha123
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_memory_pagecache_size: 256M
+      NEO4J_dbms.memory.heap.initial_size: 512M
+      NEO4J_dbms_memory_heap_max_size: 512M
+    restart: unless-stopped
+    networks:
+      - bancos_net
+
+# =============================================================================
+# Volumes persistentes (dados não são perdidos ao parar containers)
+# =============================================================================
+volumes:
+  mongodb_data:
+  mongodb_config:
+  redis_data:
+  cassandra_data:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
+
+# =============================================================================
+# Rede interna para comunicação entre containers
+# =============================================================================
+networks:
+  bancos_net:
+    driver: bridge
